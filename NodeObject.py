@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Optional, List
 import os
 
 
@@ -8,6 +8,7 @@ class NodeObject:
     depth: int
     full_include_path: str
     parent: Optional["NodeObject"] = None
+    children: List["NodeObject"] = field(default_factory=list)
 
     @property
     def name(self) -> str:
@@ -21,9 +22,8 @@ class NodeObject:
             or "Cellar/llvm" in self.full_include_path
         )
 
-    @property
-    def is_project_file(self) -> bool:
-        return not self.is_system
+    def is_project_file(self, repo_root: str) -> bool:
+        return self.full_include_path.startswith(repo_root)
 
     def path(self) -> list[str]:
         """ " Returns include path from root to this node"""

@@ -86,11 +86,13 @@ with open(output_path, "r") as f:
 
         if stack:
             node.parent = stack[-1]
+            stack[-1].children.append(node)
         stack.append(node)
         all_nodes.append(node)
 
 include_tree = IncludeTree(nodes=all_nodes)
 
-for node in include_tree.nodes:
-    if "vector" in node.full_include_path:
-        print(" → ".join(node.path()))
+print("What includes vector?")
+include_tree.why("vector")
+print("What does vector include?")
+include_tree.what("vector")
