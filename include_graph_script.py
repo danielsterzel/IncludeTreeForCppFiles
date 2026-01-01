@@ -91,25 +91,23 @@ def build_tree(source_file: str) -> IncludeTree:
 
     with open(tmp_file, "w") as f:
         subprocess.run(
-            ["clang++", "-E", "-H", source_file],
+            ["clang++", "-E", "-H", source_file, "-I", os.getcwd()],
             stdout=subprocess.DEVNULL,
             stderr=f,
-            check=True,
+            check=False,
             text=True,
         )
-
-    stack: list[NodeObject] = []
-    nodes: list[NodeObject] = []
+    root = NodeObject(depth=0, full_include_path=source_file)
+    stack: list[NodeObject] = [root]
+    nodes: list[NodeObject] = [root]
 
     with open(tmp_file, "r") as f:
         for line in f:
-            if "include" not in line:
+            line = line.strip()
+            if not line.startswith('.'):
                 continue
-
-            prefix, path = line.split("/", 1)
-            depth = prefix.count(".")
-            path = path.rstrip()
-
+            dots, path = line.split(' ', 1)
+            depth = dots.count('.')
             node = NodeObject(depth, path)
 
             while stack and stack[-1].depth >= depth:
@@ -134,6 +132,7 @@ def main():
     parser.add_argument(
         "--project-only", action="store_true", help="hide system headers"
     )
+    # parser.add_argument(" --root", help="Project root used as -I (default: current dir)")
     args = parser.parse_args()
     tree = build_tree(args.file)
 
